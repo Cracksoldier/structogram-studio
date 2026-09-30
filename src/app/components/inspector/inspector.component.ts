@@ -8,7 +8,6 @@ import {
   SwitchBlock,
   newId,
   primaryText,
-  withPrimaryText,
 } from '../../model/diagram.model';
 import { DiagramStore } from '../../services/diagram-store';
 
@@ -129,8 +128,7 @@ export class InspectorComponent {
   });
 
   setText(b: Block, value: string): void {
-    const v = value.replace(/\s*\n\s*/g, ' ').trim();
-    if (v !== primaryText(b)) this.store.updateBlock(b.id, (x) => withPrimaryText(x, v));
+    this.store.setBlockText(b.id, value);
   }
 
   convert(b: Block, kind: BlockKind): void {

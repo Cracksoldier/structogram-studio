@@ -1,4 +1,4 @@
-import { Block, Diagram, forEachChildList } from './diagram.model';
+import { Block, Diagram, forEachChildList, primaryText, withPrimaryText } from './diagram.model';
 
 /**
  * Addresses a block list inside the diagram.
@@ -103,6 +103,23 @@ export function replaceBlock(diagram: Diagram, id: string, fn: (b: Block) => Blo
   if (!loc) return diagram;
   getList(d, loc.slot)![loc.index] = fn(loc.block);
   return d;
+}
+
+/** Collapses line breaks and trims, as block text is single-line in the DSL. */
+export function normalizeText(raw: string): string {
+  return raw.replace(/\s*\n\s*/g, ' ').trim();
+}
+
+/**
+ * Sets a block's primary text (condition, header, statement…).
+ * Returns the original diagram when nothing changes, so no history entry is created.
+ */
+export function setBlockText(diagram: Diagram, id: string, raw: string): Diagram {
+  const loc = findBlock(diagram, id);
+  if (!loc) return diagram;
+  const text = normalizeText(raw);
+  if (text === primaryText(loc.block)) return diagram;
+  return replaceBlock(diagram, id, (b) => withPrimaryText(b, text));
 }
 
 /** Moves a block up (-1) or down (+1) within its sibling list. */

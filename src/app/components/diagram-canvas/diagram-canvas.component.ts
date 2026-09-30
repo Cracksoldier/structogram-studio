@@ -11,7 +11,7 @@ import {
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { ICONS } from '../../icons';
 import { Box, Prim } from '../../layout/layout';
-import { primaryText, withPrimaryText } from '../../model/diagram.model';
+import { primaryText } from '../../model/diagram.model';
 import { findBlock } from '../../model/tree-ops';
 import { DARK } from '../../render/palette';
 import { DiagramStore } from '../../services/diagram-store';
@@ -193,10 +193,9 @@ export class DiagramCanvasComponent {
     const id = this.store.editingId();
     const el = this.editor()?.nativeElement;
     if (!id || !el) return;
+    const value = el.value;
     this.store.editingId.set(null);
-    if (this.cancelled) return;
-    const value = el.value.replace(/\s*\n\s*/g, ' ').trim();
-    if (value !== this.editValue()) this.store.updateBlock(id, (b) => withPrimaryText(b, value));
+    if (!this.cancelled) this.store.setBlockText(id, value);
   }
 
   onWheel(ev: WheelEvent): void {

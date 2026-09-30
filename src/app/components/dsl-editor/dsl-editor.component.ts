@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, computed, effect, inject, signal, untracked, viewChild } from '@angular/core';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { ICONS } from '../../icons';
 import { DiagramStore } from '../../services/diagram-store';
@@ -54,10 +54,14 @@ export class DslEditorComponent {
   private timer: ReturnType<typeof setTimeout> | undefined;
 
   constructor() {
-    // Visual edits / undo re-serialize the diagram: reflect that in the editor.
+    // Visual edits / undo / loads re-serialize the diagram: they win over
+    // text typed but not yet applied, so drop any pending update.
     effect(() => {
-      const t = this.store.dslText();
-      if (this.timer === undefined) this.text.set(t);
+      this.store.externalRevision();
+      untracked(() => {
+        this.cancelPending();
+        this.text.set(this.store.dslText());
+      });
     });
   }
 
@@ -67,11 +71,18 @@ export class DslEditorComponent {
   }
 
   private schedule(): void {
-    clearTimeout(this.timer);
+    this.cancelPending();
+    const revision = this.store.externalRevision();
     this.timer = setTimeout(() => {
       this.timer = undefined;
-      this.store.applyText(this.text());
+      // An external change landed after this text was typed: don't overwrite it.
+      if (this.store.externalRevision() === revision) this.store.applyText(this.text());
     }, 250);
+  }
+
+  private cancelPending(): void {
+    clearTimeout(this.timer);
+    this.timer = undefined;
   }
 
   onKey(ev: KeyboardEvent): void {

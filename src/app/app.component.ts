@@ -78,6 +78,8 @@ export class AppComponent {
   onKey(ev: KeyboardEvent): void {
     const t = ev.target as HTMLElement;
     if (t.closest('input, textarea, select, [contenteditable]')) return;
+    // Enter/Space on a focused button or link must activate it, not trigger editor shortcuts.
+    if ((ev.key === 'Enter' || ev.key === ' ') && t.closest('button, a[href], [role="button"]')) return;
     const s = this.store;
     const mod = ev.ctrlKey || ev.metaKey;
     const key = ev.key.toLowerCase();

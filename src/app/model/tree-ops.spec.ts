@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseDsl } from '../dsl/parser';
 import { Diagram } from './diagram.model';
-import { findBlock, insertBlock, moveBlock, relocateBlock, removeBlock, ROOT_SLOT } from './tree-ops';
+import { findBlock, insertBlock, moveBlock, relocateBlock, removeBlock, ROOT_SLOT, setBlockText } from './tree-ops';
 
 function d(src: string): Diagram {
   const r = parseDsl(src);
@@ -34,5 +34,30 @@ describe('tree-ops', () => {
     const r = relocateBlock(base, base.body[0].id, { owner: loopId, branch: 'body' }, 0);
     expect(r.body).toHaveLength(2);
     expect(relocateBlock(base, loopId, { owner: loopId, branch: 'body' }, 0)).toBe(base);
+  });
+
+  describe('setBlockText', () => {
+    const doc = d('hello\nif c {\n}');
+    const stmtId = doc.body[0].id;
+
+    it('allows clearing text completely', () => {
+      const r = setBlockText(doc, stmtId, '');
+      expect(r).not.toBe(doc);
+      expect(r.body[0]).toMatchObject({ text: '' });
+    });
+
+    it('returns the same diagram when text is unchanged (no history entry)', () => {
+      expect(setBlockText(doc, stmtId, 'hello')).toBe(doc);
+      expect(setBlockText(doc, stmtId, '  hello \n')).toBe(doc);
+    });
+
+    it('normalizes line breaks and sets conditions', () => {
+      const r = setBlockText(doc, doc.body[1].id, 'a >\n b');
+      expect(r.body[1]).toMatchObject({ condition: 'a > b' });
+    });
+
+    it('ignores unknown ids', () => {
+      expect(setBlockText(doc, 'nope', 'x')).toBe(doc);
+    });
   });
 });

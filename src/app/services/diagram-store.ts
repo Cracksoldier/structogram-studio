@@ -6,6 +6,7 @@ import { layoutDiagram } from '../layout/layout';
 import { canvasMeasurer } from '../layout/text-measure';
 import { Block, BlockKind, Diagram, cloneWithNewIds, createBlock } from '../model/diagram.model';
 import { SAMPLE_DSL } from '../model/sample';
+import { InvalidDiagramError, validateDiagram } from '../model/validate';
 import {
   ROOT_SLOT,
   Slot,
@@ -16,6 +17,7 @@ import {
   moveBlock,
   removeBlock,
   replaceBlock,
+  setBlockText,
   slotKey,
 } from '../model/tree-ops';
 
@@ -30,9 +32,6 @@ function sampleDiagram(): Diagram {
   return r.ok ? r.diagram : { title: '', body: [] };
 }
 
-function isDiagram(v: unknown): v is Diagram {
-  return !!v && typeof v === 'object' && Array.isArray((v as Diagram).body);
-}
 
 @Injectable({ providedIn: 'root' })
 export class DiagramStore {
@@ -44,6 +43,8 @@ export class DiagramStore {
   /** Bumped when web fonts finish loading so text is re-measured. */
   readonly fontEpoch = signal(0);
   readonly editingId = signal<string | null>(null);
+  /** Incremented on every change that did not come from the DSL editor (visual edit, undo, load…). */
+  readonly externalRevision = signal(0);
 
   private readonly undoStack = signal<Diagram[]>([]);
   private readonly redoStack = signal<Diagram[]>([]);
@@ -90,11 +91,10 @@ export class DiagramStore {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
-        const parsed: unknown = JSON.parse(raw);
-        if (isDiagram(parsed)) return parsed;
+        return validateDiagram(JSON.parse(raw));
       }
     } catch {
-      /* ignore corrupt storage */
+      /* corrupt or incompatible storage – start from the sample */
     }
     return sampleDiagram();
   }
@@ -108,6 +108,7 @@ export class DiagramStore {
     this.pushHistory(prev);
     this.diagram.set(next);
     this.dslText.set(serializeDsl(next));
+    this.externalRevision.update((n) => n + 1);
     this.parseError.set(null);
     this.lastTextEdit = 0;
   }
@@ -157,6 +158,7 @@ export class DiagramStore {
   private setWithoutHistory(d: Diagram): void {
     this.diagram.set(d);
     this.dslText.set(serializeDsl(d));
+    this.externalRevision.update((n) => n + 1);
     this.parseError.set(null);
     this.lastTextEdit = 0;
     this.pruneSelection();
@@ -241,6 +243,11 @@ export class DiagramStore {
     this.commit(replaceBlock(this.diagram(), id, fn));
   }
 
+  /** Sets a block's primary text; unchanged text creates no history entry. */
+  setBlockText(id: string, text: string): void {
+    this.commit(setBlockText(this.diagram(), id, text));
+  }
+
   setTitle(title: string): void {
     if (title !== this.diagram().title) this.commit({ ...this.diagram(), title });
   }
@@ -256,9 +263,14 @@ export class DiagramStore {
   }
 
   loadJson(json: string): void {
-    const v: unknown = JSON.parse(json);
-    if (!isDiagram(v)) throw new Error('File does not contain a Nassi–Shneiderman diagram.');
-    this.commit({ title: typeof v.title === 'string' ? v.title : '', body: v.body });
+    let diagram: Diagram;
+    try {
+      diagram = validateDiagram(JSON.parse(json));
+    } catch (e) {
+      const detail = e instanceof InvalidDiagramError || e instanceof SyntaxError ? `: ${e.message}` : '';
+      throw new Error(`File does not contain a valid Nassi–Shneiderman diagram${detail}`);
+    }
+    this.commit(diagram);
     this.selection.set(null);
   }
 
