@@ -1,0 +1,84 @@
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fortawesome/fontawesome-svg-core/styles.css';
+
+:root {
+  --bg: #0a1020;
+  --panel: #111a2e;
+  --panel-2: #16223b;
+  --border: #22314f;
+  --border-strong: #2f4670;
+  --text: #d6e2ff;
+  --muted: #7f93b8;
+  --accent: #4fc3f7;
+  --accent-2: #7aa2f7;
+  --danger: #f7768e;
+  --hover: rgba(122, 162, 247, 0.12);
+  --selected: rgba(79, 195, 247, 0.14);
+  --diagram-bg: #0b1324;
+  --font-ui: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #243556;
+  border-radius: 10px;
+  border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2f4670;
+}
+* {
+  scrollbar-color: #243556 transparent;
+}
+
+/* shared panel header used by side panels */
+.panel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  background: var(--panel);
+}
+.panel-head fa-icon {
+  color: var(--accent);
+}
+.panel-head .grow {
+  flex: 1;
+}

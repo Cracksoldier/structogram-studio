@@ -1,0 +1,116 @@
+:host {
+  position: relative;
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  background-color: var(--bg);
+  background-image: radial-gradient(circle at 1px 1px, rgba(122, 162, 247, 0.11) 1px, transparent 0);
+  background-size: 22px 22px;
+}
+
+.scroller {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  display: flex;
+  padding: 36px;
+}
+
+.stage {
+  position: relative;
+  margin: auto;
+  flex: none;
+}
+
+.diagram {
+  display: block;
+  border-radius: 4px;
+  box-shadow:
+    0 0 0 1px rgba(79, 195, 247, 0.08),
+    0 24px 60px -24px rgba(0, 0, 0, 0.85),
+    0 0 80px -40px rgba(79, 195, 247, 0.35);
+  background: var(--diagram-bg);
+}
+
+.tx {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  white-space: pre;
+  user-select: none;
+}
+.tx.title {
+  font-weight: 600;
+  font-size: 15px;
+}
+.tx.label {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.hit {
+  cursor: pointer;
+}
+
+.hover {
+  fill: rgba(122, 162, 247, 0.07);
+  stroke: rgba(122, 162, 247, 0.55);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+  pointer-events: none;
+}
+.sel {
+  fill: rgba(79, 195, 247, 0.1);
+  stroke: var(--accent);
+  stroke-width: 2;
+  pointer-events: none;
+  filter: drop-shadow(0 0 4px rgba(79, 195, 247, 0.6));
+}
+
+.inline-edit {
+  position: absolute;
+  box-sizing: border-box;
+  resize: none;
+  padding: 6px 10px;
+  border: 2px solid var(--accent);
+  border-radius: 3px;
+  background: #0c1a33;
+  color: var(--text);
+  font-family: var(--font-ui);
+  line-height: 1.35;
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(79, 195, 247, 0.18), 0 8px 24px rgba(0, 0, 0, 0.5);
+  z-index: 5;
+}
+
+.zoombar {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: rgba(17, 26, 46, 0.9);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+.zoombar button {
+  height: 28px;
+  min-width: 28px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  border-radius: 7px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+}
+.zoombar button:hover {
+  background: var(--hover);
+  color: var(--accent);
+}
+.zoombar .pct {
+  min-width: 52px;
+  font-variant-numeric: tabular-nums;
+}
